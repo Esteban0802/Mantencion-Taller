@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard - Taller</title>
+  <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+
+  <div class="layout">
+
+    <!-- 🔹 MENÚ LATERAL -->
+    <aside class="sidebar">
+      <h2>Taller</h2>
+      <ul>
+        <li>Dashboard</li>
+        <li id="btnOT">Órdenes de Trabajo</li>
+        <li>Reportes</li>
+        <li id="logout">Cerrar sesión</li>
+      </ul>
+    </aside>
+
+
+
+    <!-- 🔹 CONTENIDO PRINCIPAL -->
+    <main class="main">
+
+      <h1>Panel Principal</h1>
+
+      <!-- TARJETAS -->
+      <div class="cards">
+
+          <div class="card" onclick="filtrarEstado('Ingreso')">
+            <h3>Ingreso</h3>
+            <p id="cardIngreso">0</p>
+          </div>
+
+          <div class="card" onclick="filtrarEstado('En reparación')">
+            <h3>En Reparación</h3>
+            <p id="cardReparacion">0</p>
+          </div>
+
+          <div class="card" onclick="filtrarEstado('Entregado')">
+            <h3>Entregado</h3>
+            <p id="cardEntregado">0</p>
+          </div>
+
+          <div class="card" onclick="filtrarEstado('Terminado')">
+            <h3>Terminado</h3>
+            <p id="cardTerminado">0</p>
+          </div>
+
+          <div class="card" onclick="verTodas()">
+            <h3>Total Equipos</h3>
+            <p id="cardTotal">0</p>
+          </div>
+
+      </div>
+
+      <!-- LISTADO SIMPLE -->
+      <h2>Últimas Órdenes</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>OT</th>
+            <th>Máquina</th>
+            <th>Estado</th>
+            <th>Fecha</th>
+            <th>Acciones</th> <!-- 🔥 NUEVO -->
+          </tr>
+        </thead>
+        <tbody id="tablaOT">
+          <!-- Se llena con JS -->
+        </tbody>
+      </table>
+
+    </main>
+
+  </div>
+
+  <script src="js/dashboard.js"></script>
+  
+
+</body>
+</html>

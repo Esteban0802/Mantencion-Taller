@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Detalle OT</title>
+  <link rel="stylesheet" href="css/detalle.css">
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <h2>Taller</h2>
+    <ul>
+      <li onclick="irOT()">Órdenes</li>
+      <li onclick="irDashboard()">Dashboard</li>
+    </ul>
+  </aside>
+
+  <!-- CONTENIDO -->
+  <main class="main">
+
+    <!-- ENCABEZADO -->
+    <div class="header">
+      <h1 id="otId">OT-001</h1>
+      <button onclick="finalizarOT()">Finalizar OT</button>
+      <button onclick="abrirModalEntrega()">Entregar</button>
+    </div>
+
+    <!-- INFO GENERAL -->
+    <div class="info">
+      <p><strong>Máquina:</strong> <span id="maquina"></span></p>
+      <p><strong>Serie:</strong> <span id="serie"></span></p>
+      <p><strong>Cliente:</strong> <span id="cliente"></span></p>
+      <p><strong>Estado:</strong> <span id="estado"></span></p>
+    </div>
+
+    <!-- BOTÓN REGISTRO -->
+    <button id="btnRegistro">+ Registrar trabajo</button>
+
+    <!-- BITÁCORA -->
+    <h2>Bitácora</h2>
+    <div id="bitacora"></div>
+
+    <!-- MODAL REGISTRO -->
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <h3>Registro Diario</h3>
+
+        <input type="text" id="tecnico" placeholder="Nombre técnico">
+        <textarea id="descripcion" placeholder="Trabajo realizado"></textarea>
+        <input type="file" id="foto" accept="image/*" multiple>
+
+        <h4>Repuestos utilizados</h4>
+        <div id="listaRepuestos" class="lista-repuestos"></div>
+
+        <!-- 🔥 NUEVA SECCIÓN DE REPUESTOS -->
+        <h4>Repuestos utilizados</h4>
+        <div id="listaRepuestos" class="lista-repuestos"></div>
+
+        <div class="botones">
+          <button onclick="guardarRegistro()">Guardar</button>
+          <button onclick="cerrarModal()">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+</div>
+
+<!-- VISOR DE IMÁGENES -->
+<div id="visor" class="visor">
+  <img id="imgGrande">
+</div>
+
+<script src="js/detalle.js"></script>
+
+</body>
+</html>

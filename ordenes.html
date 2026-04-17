@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Órdenes de Trabajo</title>
+  <link rel="stylesheet" href="css/ordenes.css">
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- SIDEBAR (igual que dashboard) -->
+  <aside class="sidebar">
+    <h2>Taller</h2>
+    <ul>
+      <li onclick="irDashboard()">Dashboard</li>
+      <li class="active">Órdenes de Trabajo</li>
+      <li>Reportes</li>
+    </ul>
+  </aside>
+
+  <!-- CONTENIDO -->
+  <main class="main">
+
+    <h1>Órdenes de Trabajo</h1>
+
+    <button id="btnNuevaOT">+ Nueva OT</button>
+
+    <input type="text" id="buscador" placeholder="Buscar OS, cliente, máquina o serie...">
+
+    <!-- TABLA -->
+    <table>
+      <thead>
+        <tr>
+            <th>OT</th>
+            <th>Máquina</th>
+            <th>Serie</th>
+            <th>Cliente</th>
+            <th>Estado</th>
+            <th>Fecha</th>
+        </tr>
+    </thead>
+      <tbody id="tablaOT"></tbody>
+    </table>
+
+    <!-- MODAL (FORMULARIO) -->
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <h2>Nueva Orden</h2>
+
+        <input type="text" id="maquina" placeholder="Máquina">
+        <input type="text" id="serie" placeholder="Serie">
+        <input type="text" id="cliente" placeholder="Cliente">
+        <input type="text" id="descripcion" placeholder="Descripción">
+        <input type="text" id="numeroOS" placeholder="Número de OS (ej: OS-001)">
+        <input type="file" id="excelRepuestos" accept=".xlsx, .xls">
+        <select id="estado">
+          <option value="Ingreso">Ingreso</option>
+          <option value="Diagnóstico">Diagnóstico</option>
+          <option value="En reparación">En reparación</option>
+          <option value="Terminado">Terminado</option>
+          <option value="Entregado">Entregado</option>
+        </select>
+
+        <button onclick="guardarOT()">Guardar</button>
+        <button onclick="cerrarModal()">Cancelar</button>
+      </div>
+    </div>
+
+  </main>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="js/ordenes.js"></script>
+
+</body>
+</html>
