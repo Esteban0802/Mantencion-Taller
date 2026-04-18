@@ -92,9 +92,9 @@ async function guardarRegistro() {
   ot.registros.push(nuevoRegistro);
 
   // 🔄 estado automático
-  if (ot.estado === "Ingreso" || ot.estado === "Diagnóstico") {
-    ot.estado = "En reparación";
-  }
+  if (ot.estado === "Ingreso") {
+  ot.estado = "Evaluación";
+}
 
   localStorage.setItem("ordenes", JSON.stringify(ordenes));
 
@@ -121,9 +121,14 @@ function renderBitacora() {
   ot.registros.forEach((reg, i) => {
 
     let claseExtra = "";
-    if (reg.tipo === "entrega") {
-      claseExtra = "registro-entrega";
-    }
+
+        if (reg.tipo === "entrega") {
+        claseExtra = "registro-entrega";
+        }
+
+        if (reg.tipo === "ingreso") {
+        claseExtra = "registro-ingreso";
+        }
 
     const imagenesHTML = reg.imagenes
       ? reg.imagenes.map((img, index) => `
@@ -134,6 +139,28 @@ function renderBitacora() {
       `).join("")
       : "";
 
+      let checklistHTML = "";
+
+if (reg.tipo === "ingreso" && reg.checklist) {
+
+  checklistHTML = `
+    <div class="checklist-bitacora">
+
+      <h4 onclick="this.nextElementSibling.classList.toggle('oculto')" style="cursor:pointer;">
+        Checklist de ingreso ⬇
+      </h4>
+
+      <ul class="oculto">
+        ${reg.checklist.map(item => {
+          const texto = item.Nombre || item.nombre || Object.values(item)[0];
+          return `<li>✔ ${texto}</li>`;
+        }).join("")}
+      </ul>
+
+    </div>
+  `;
+}
+
     // 🔥 REPUESTOS
     const repuestosHTML = reg.repuestos && reg.repuestos.length > 0
       ? `<p><strong>Repuestos usados:</strong> ${reg.repuestos.join(", ")}</p>`
@@ -143,11 +170,13 @@ function renderBitacora() {
     div.className = "registro " + claseExtra;
 
     div.innerHTML = `
-      <p><strong>${reg.fecha}</strong> - ${reg.tecnico}</p>
-      <p>${reg.descripcion}</p>
-      ${repuestosHTML}
-      <div class="galeria">${imagenesHTML}</div>
-    `;
+  <p><strong>${reg.fecha}</strong> - ${reg.tecnico}</p>
+  <p>${reg.descripcion}</p>
+
+  ${checklistHTML} <!-- 🔥 AQUÍ -->
+
+  <div class="galeria">${imagenesHTML}</div>
+`;
 
     contenedor.appendChild(div);
   });
@@ -166,8 +195,9 @@ function eliminarFoto(index, registroIndex) {
 
 // 🔹 ENTREGAR OT
 function entregarOT() {
+      alert("Función en actualización");
 
-  if (!ot.registros || ot.registros.length === 0) {
+  /*if (!ot.registros || ot.registros.length === 0) {
     alert("Debes registrar trabajo antes de entregar la OT");
     return;
   }
@@ -187,13 +217,13 @@ function entregarOT() {
   ot.estado = "Entregado";
 
   localStorage.setItem("ordenes", JSON.stringify(ordenes));
-  document.getElementById("estado").textContent = ot.estado;
+  document.getElementById("estado").textContent = ot.estado; */
 }
 
 // 🔹 FINALIZAR OT
 function finalizarOT() {
-
-  if (!ot.registros || ot.registros.length === 0) {
+    alert("Función en actualización");
+ /* if (!ot.registros || ot.registros.length === 0) {
     alert("Debes registrar trabajo antes de finalizar");
     return;
   }
@@ -209,7 +239,7 @@ function finalizarOT() {
   ot.estado = "Terminado";
 
   localStorage.setItem("ordenes", JSON.stringify(ordenes));
-  document.getElementById("estado").textContent = ot.estado;
+  document.getElementById("estado").textContent = ot.estado; */
 }
 
 // 🔹 CARGAR REPUESTOS EN MODAL

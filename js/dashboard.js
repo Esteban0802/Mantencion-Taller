@@ -6,8 +6,10 @@ function cargarDashboard() {
   let total = ordenes.length;
 
   let ingreso = 0;
-  let reparacion = 0;
-  let entregado = 0;
+  let evaluacion = 0;
+  let overhaul = 0;
+  let pruebas = 0;
+  let despacho = 0;
   let terminado = 0;
   document.getElementById("cardTotal").textContent = total;
 
@@ -15,14 +17,18 @@ function cargarDashboard() {
 
   ordenes.forEach(ot => {
     if (ot.estado === "Ingreso") ingreso++;
-    if (ot.estado === "En reparación") reparacion++;
-    if (ot.estado === "Entregado") entregado++;
+    if (ot.estado === "Evaluación") evaluacion++;
+    if (ot.estado === "Overhaul") overhaul++;
+    if (ot.estado === "Pruebas") pruebas++;
+    if (ot.estado === "Despacho") despacho++;
     if (ot.estado === "Terminado") terminado++;
   });
 
   document.getElementById("cardIngreso").textContent = ingreso;
-  document.getElementById("cardReparacion").textContent = reparacion;
-  document.getElementById("cardEntregado").textContent = entregado;
+  document.getElementById("cardEvaluacion").textContent = evaluacion;
+  document.getElementById("cardOverhaul").textContent = overhaul;
+  document.getElementById("cardPruebas").textContent = pruebas;
+  document.getElementById("cardDespacho").textContent = despacho;
   document.getElementById("cardTerminado").textContent = terminado;
 
 

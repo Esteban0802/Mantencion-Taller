@@ -44,32 +44,55 @@
     </table>
 
     <!-- MODAL (FORMULARIO) -->
-    <div id="modal" class="modal">
-      <div class="modal-content">
-        <h2>Nueva Orden</h2>
+<div id="modal" class="modal">
+  <div class="modal-content">
 
-        <input type="text" id="maquina" placeholder="Máquina">
-        <input type="text" id="serie" placeholder="Serie">
-        <input type="text" id="cliente" placeholder="Cliente">
-        <input type="text" id="descripcion" placeholder="Descripción">
-        <input type="text" id="numeroOS" placeholder="Número de OS (ej: OS-001)">
-        <input type="file" id="excelRepuestos" accept=".xlsx, .xls">
-        <select id="estado">
-          <option value="Ingreso">Ingreso</option>
-          <option value="Diagnóstico">Diagnóstico</option>
-          <option value="En reparación">En reparación</option>
-          <option value="Terminado">Terminado</option>
-          <option value="Entregado">Entregado</option>
-        </select>
+    <!-- PASO 1 -->
+    <div id="paso1">
+      <h3>Datos del equipo</h3>
 
-        <button onclick="guardarOT()">Guardar</button>
-        <button onclick="cerrarModal()">Cancelar</button>
+      <input type="text" id="maquina" placeholder="Máquina">
+      <input type="text" id="serie" placeholder="Serie">
+      <input type="text" id="cliente" placeholder="Cliente">
+      <input type="text" id="numeroOS" placeholder="Número de OS (Ej: OS-001)">
+
+      <!-- Excel -->
+      <input type="file" id="excelChecklist" accept=".xlsx">
+
+      <button onclick="volverPaso(2)">⬅ Volver</button>
+      <button onclick="siguientePaso(1)">Siguiente</button>
+    </div>
+
+    <!-- PASO 2 -->
+    <div id="paso2" style="display:none;">
+      <h3>Checklist de ingreso</h3>
+
+      <div id="listaChecklist" class="lista-repuestos"></div>
+
+      <div class="botones-modal">
+        <button onclick="volverPaso(2)">⬅ Volver</button>
+        <button onclick="siguientePaso(2)">Siguiente ➡</button>
       </div>
     </div>
+
+    <!-- PASO 3 -->
+    <div id="paso3" style="display:none;">
+      <h3>Evidencia de ingreso</h3>
+
+      <input type="file" id="fotosIngreso" multiple accept="image/*">
+
+      <button onclick="volverPaso(3)">Atrás</button>
+      <button onclick="guardarOT()">Guardar</button>
+    </div>
+
+  </div>
+</div>
 
   </main>
 
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script src="js/ordenes.js"></script>
 
