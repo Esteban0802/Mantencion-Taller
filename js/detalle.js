@@ -1,12 +1,19 @@
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
 
-const ordenes = JSON.parse(localStorage.getItem("ordenes")) || [];
+let ordenes = JSON.parse(localStorage.getItem("ordenes")) || [];
+
+const estadosFlujo = [
+  "Ingreso",
+  "Evaluación",
+  "Overhaul",
+  "Pruebas",
+  "Despacho",
+  "Terminado"
+];
 
 // 🔍 Buscar OT
-const ot = ordenes.find(o => o.id == id);
-
-console.log("OT completa:", ot);
+let ot = ordenes.find(o => o.id == id);
 
 if (!ot) {
   alert("OT no encontrada");
@@ -24,14 +31,87 @@ document.getElementById("serie").textContent = ot.serie;
 document.getElementById("cliente").textContent = ot.cliente;
 document.getElementById("estado").textContent = ot.estado;
 
-// 🔹 Abrir modal registro
-document.getElementById("btnRegistro").addEventListener("click", () => {
-  document.getElementById("modal").style.display = "flex";
-  cargarRepuestosOT(); // 🔥 clave
+const btnAprobar = document.getElementById("btnAprobar");
+const inputDoc = document.getElementById("docAprobacion");
+
+const rol = localStorage.getItem("rol");
+
+// 🔒 SOLO ADMIN VE EL BOTÓN
+if (btnAprobar) {
+
+  if (rol === "admin" && ot.estado === "Espera Aprobación") {
+    btnAprobar.style.display = "inline-block";
+  } else {
+    btnAprobar.style.display = "none";
+  }
+
+  btnAprobar.addEventListener("click", () => {
+  document.getElementById("modalAprobacion").style.display = "flex";
 });
 
-function cerrarModal() {
-  document.getElementById("modal").style.display = "none";
+  inputDoc.addEventListener("change", async () => {
+
+    const file = inputDoc.files[0];
+
+    if (!file) {
+      alert("Debes subir un documento para aprobar");
+      return;
+    }
+
+    const confirmar = confirm("¿Aprobar evaluación?");
+    if (!confirmar) return;
+
+    const base64 = await convertirBase64(file);
+
+    // 🔥 guardar aprobación
+    ot.aprobada = true;
+    ot.bloqueada = false;
+    ot.estado = "Overhaul";
+
+    ot.aprobacion = {
+      documento: base64,
+      fecha: new Date().toLocaleDateString(),
+      usuario: "Administrador"
+    };
+
+    // 🔥 BITÁCORA
+    ot.registros.push({
+      id: Date.now(),
+      fecha: new Date().toLocaleDateString(),
+      tecnico: "Administrador",
+      descripcion: "✅ Evaluación aprobada con documentación",
+      tipo: "aprobacion",
+      documento: base64
+    });
+
+    localStorage.setItem("ordenes", JSON.stringify(ordenes));
+
+    alert("OT aprobada correctamente");
+
+    location.reload();
+  });
+}
+
+// 🔥 BOTÓN OVERHAUL
+const btnOverhaul = document.getElementById("btnOverhaul");
+
+if (btnOverhaul) {
+
+  // 👁️ opcional: mostrar solo en etapa correcta
+  if (ot.estado === "Overhaul" && ot.aprobada) {
+    btnOverhaul.style.display = "inline-block";
+  } else {
+    btnOverhaul.style.display = "none";
+  }
+
+  btnOverhaul.addEventListener("click", () => {
+    abrirOverhaul(ot.id);
+  });
+}
+
+// 🔒 BLOQUEAR SI ESTÁ EN ESPERA DE APROBACIÓN
+if (ot.bloqueada) {
+  document.getElementById("btnRegistro").style.display = "none";
 }
 
 // 🔹 VISOR IMAGEN
@@ -39,10 +119,15 @@ const visor = document.getElementById("visor");
 const imgGrande = document.getElementById("imgGrande");
 
 document.addEventListener("click", function(e) {
-  if (e.target.classList.contains("foto")) {
+
+  if (e.target.classList.contains("mini-img")) {
+    const visor = document.getElementById("visor");
+    const imgGrande = document.getElementById("imgGrande");
+
     visor.style.display = "flex";
     imgGrande.src = e.target.src;
   }
+
 });
 
 visor.addEventListener("click", function(e) {
@@ -51,69 +136,17 @@ visor.addEventListener("click", function(e) {
   }
 });
 
-// 🔹 Guardar registro
-async function guardarRegistro() {
-
-  const tecnico = document.getElementById("tecnico").value;
-  const descripcion = document.getElementById("descripcion").value;
-
-  if (!tecnico || !descripcion) {
-    alert("Completa los campos");
-    return;
-  }
-
-  const fileInput = document.getElementById("foto");
-  let imagenes = [];
-
-  if (fileInput.files.length > 0) {
-    for (let file of fileInput.files) {
-      const base64 = await convertirBase64(file);
-      imagenes.push(base64);
-    }
-  }
-
-  // 🔥 REPUESTOS SELECCIONADOS
-  const checkboxes = document.querySelectorAll("#listaRepuestos input:checked");
-
-  let repuestosUsados = [];
-  checkboxes.forEach(cb => {
-    repuestosUsados.push(cb.value);
-  });
-
-  const nuevoRegistro = {
-    id: Date.now(),
-    fecha: new Date().toLocaleDateString(),
-    tecnico,
-    descripcion,
-    imagenes,
-    repuestos: repuestosUsados
-  };
-
-  ot.registros.push(nuevoRegistro);
-
-  // 🔄 estado automático
-  if (ot.estado === "Ingreso") {
-  ot.estado = "Evaluación";
-}
-
-  localStorage.setItem("ordenes", JSON.stringify(ordenes));
-
-  renderBitacora();
-  cerrarModal();
-}
-
 // 🔹 Convertir imagen
 function convertirBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
-
     reader.onload = () => resolve(reader.result);
     reader.onerror = error => reject(error);
   });
 }
 
-// 🔹 Render bitácora
+// 🔹 RENDER BITÁCORA
 function renderBitacora() {
   const contenedor = document.getElementById("bitacora");
   contenedor.innerHTML = "";
@@ -122,14 +155,15 @@ function renderBitacora() {
 
     let claseExtra = "";
 
-        if (reg.tipo === "entrega") {
-        claseExtra = "registro-entrega";
-        }
+    if (reg.tipo === "entrega") claseExtra = "registro-entrega";
+    if (reg.tipo === "ingreso") claseExtra = "registro-ingreso";
+    if (reg.tipo === "evaluacion") claseExtra = "registro-evaluacion";
+    if (reg.tipo === "overhaul") {
+  claseExtra = "registro-overhaul";
+}
+if (reg.tipo === "aprobacion") claseExtra = "registro-aprobacion";
 
-        if (reg.tipo === "ingreso") {
-        claseExtra = "registro-ingreso";
-        }
-
+    // 🔹 IMÁGENES
     const imagenesHTML = reg.imagenes
       ? reg.imagenes.map((img, index) => `
         <div class="foto-container">
@@ -139,50 +173,130 @@ function renderBitacora() {
       `).join("")
       : "";
 
-      let checklistHTML = "";
+    // 🔹 CHECKLISTS
+    let checklistHTML = "";
 
-if (reg.tipo === "ingreso" && reg.checklist) {
+    // INGRESO
+    if (reg.tipo === "ingreso" && reg.checklist) {
+      checklistHTML = `
+        <div class="checklist-bitacora">
+          <h4 onclick="this.nextElementSibling.classList.toggle('oculto')" style="cursor:pointer;">
+            Checklist de ingreso ⬇
+          </h4>
+          <ul class="oculto">
+            ${reg.checklist.map(item => {
+              const texto = item.Nombre || item.nombre || Object.values(item)[0];
+              return `<li>✔ ${texto}</li>`;
+            }).join("")}
+          </ul>
+        </div>
+      `;
+    }
 
+    // EVALUACIÓN
+    if (reg.tipo === "evaluacion" && reg.checklist) {
+      checklistHTML = `
+        <div class="checklist-bitacora">
+          <h4 onclick="this.nextElementSibling.classList.toggle('oculto')" style="cursor:pointer;">
+            Evaluación ⬇
+          </h4>
+          <ul class="oculto">
+            ${reg.checklist.map((item, i) => {
+              const texto = item.Nombre || Object.values(item)[0];
+              const estado = reg.progreso?.[i];
+
+              if (!estado) return `<li>⬜ ${texto}</li>`;
+
+              return `
+                <li>
+                  ${estado.checked ? "✔" : "⬜"} ${texto}
+                  ${estado.img ? `<br><img src="${estado.img}" class="mini-img">` : ""}
+                </li>
+              `;
+            }).join("")}
+          </ul>
+        </div>
+      `;
+    }
+
+    if (reg.tipo === "overhaul" && reg.checklist) {
   checklistHTML = `
     <div class="checklist-bitacora">
-
       <h4 onclick="this.nextElementSibling.classList.toggle('oculto')" style="cursor:pointer;">
-        Checklist de ingreso ⬇
+        Overhaul ⬇
       </h4>
-
       <ul class="oculto">
-        ${reg.checklist.map(item => {
-          const texto = item.Nombre || item.nombre || Object.values(item)[0];
-          return `<li>✔ ${texto}</li>`;
+        ${reg.checklist.map((item, i) => {
+
+          const texto = item.Nombre || Object.values(item)[0];
+          const estado = reg.progreso?.[i];
+
+          if (!estado) return `<li>⬜ ${texto}</li>`;
+
+          return `
+            <li>
+              ${estado.checked ? "✔" : "⬜"} ${texto}
+              ${estado.img ? `<br><img src="${estado.img}" class="mini-img">` : ""}
+            </li>
+          `;
         }).join("")}
       </ul>
-
     </div>
   `;
 }
 
-    // 🔥 REPUESTOS
+    // 🔹 REPUESTOS
     const repuestosHTML = reg.repuestos && reg.repuestos.length > 0
       ? `<p><strong>Repuestos usados:</strong> ${reg.repuestos.join(", ")}</p>`
       : "";
 
     const div = document.createElement("div");
-    div.className = "registro " + claseExtra;
+div.className = "registro " + claseExtra;
 
-    div.innerHTML = `
-  <p><strong>${reg.fecha}</strong> - ${reg.tecnico}</p>
-  <p>${reg.descripcion}</p>
+// 🔥 AQUÍ VA
+if (reg.tipo === "evaluacion") {
 
-  ${checklistHTML} <!-- 🔥 AQUÍ -->
+  const evaluacionFinalizada = ot.estado === "Espera Aprobación" || ot.bloqueada;
 
-  <div class="galeria">${imagenesHTML}</div>
+  if (!evaluacionFinalizada) {
+    // 🟡 EN PROGRESO → PERMITIR EDITAR
+    div.style.cursor = "pointer";
+
+    div.addEventListener("click", () => {
+      abrirEvaluacion(ot.id);
+    });
+
+  } else {
+    // 🟢 FINALIZADA → SOLO VISUAL
+    div.style.cursor = "default";
+
+     // 🔥 AQUÍ VA
+    div.classList.add("evaluacion-finalizada");
+  }
+}
+
+div.innerHTML = `
+  <div class="contenido-registro">
+    <p><strong>${reg.fecha}</strong> - ${reg.tecnico}</p>
+    <p>${reg.descripcion}</p>
+
+    ${reg.documentos ? reg.documentos.map(doc => `
+      <div>
+        <a href="${doc}" target="_blank">📄 Ver documento</a>
+      </div>
+    `).join("") : ""}
+
+    ${checklistHTML}
+
+    <div class="galeria">${imagenesHTML}</div>
+  </div>
 `;
 
     contenedor.appendChild(div);
   });
 }
 
-// 🔹 Eliminar foto
+// 🔹 ELIMINAR FOTO
 function eliminarFoto(index, registroIndex) {
   const registro = ot.registros[registroIndex];
   if (!registro) return;
@@ -193,88 +307,81 @@ function eliminarFoto(index, registroIndex) {
   renderBitacora();
 }
 
-// 🔹 ENTREGAR OT
-function entregarOT() {
-      alert("Función en actualización");
+// 🔹 AVANZAR ESTADO
+function avanzarEstado() {
 
-  /*if (!ot.registros || ot.registros.length === 0) {
-    alert("Debes registrar trabajo antes de entregar la OT");
+  const indexActual = estadosFlujo.indexOf(ot.estado);
+
+  if (indexActual === -1 || indexActual === estadosFlujo.length - 1) {
+    alert("No se puede avanzar más");
     return;
   }
 
-  const tieneFotos = ot.registros.some(reg => 
-    reg.imagenes && reg.imagenes.length > 0
-  );
-
-  if (!tieneFotos) {
-    alert("Debes adjuntar al menos una foto");
+  if (!ot.registros || ot.registros.length === 0) {
+    alert("Debes registrar trabajo antes de avanzar");
     return;
   }
 
-  const confirmar = confirm("¿Seguro que deseas marcar como ENTREGADO?");
-  if (!confirmar) return;
+  if (ot.estado === "Evaluación") {
+    if (!checklistCompleto()) {
+      alert("Debes completar el checklist antes de avanzar");
+      return;
+    }
+  }
 
-  ot.estado = "Entregado";
+  const siguienteEstado = estadosFlujo[indexActual + 1];
+
+  if (!confirm(`¿Avanzar a ${siguienteEstado}?`)) return;
+
+  ot.estado = siguienteEstado;
 
   localStorage.setItem("ordenes", JSON.stringify(ordenes));
-  document.getElementById("estado").textContent = ot.estado; */
+  document.getElementById("estado").textContent = ot.estado;
+
+  alert("Estado actualizado a: " + siguienteEstado);
 }
 
-// 🔹 FINALIZAR OT
-function finalizarOT() {
-    alert("Función en actualización");
- /* if (!ot.registros || ot.registros.length === 0) {
-    alert("Debes registrar trabajo antes de finalizar");
-    return;
-  }
+// 🔹 VALIDACIÓN CHECKLIST
+function checklistCompleto() {
+  const ingreso = ot.registros.find(r => r.tipo === "ingreso");
 
-  if (ot.estado !== "Entregado") {
-    alert("Debes completar la ENTREGA antes de finalizar");
-    return;
-  }
+  if (!ingreso || !ingreso.checklist) return false;
+  if (ingreso.checklist.length === 0) return false;
 
-  const confirmar = confirm("¿Seguro?");
-  if (!confirmar) return;
-
-  ot.estado = "Terminado";
-
-  localStorage.setItem("ordenes", JSON.stringify(ordenes));
-  document.getElementById("estado").textContent = ot.estado; */
+  return true;
 }
 
-// 🔹 CARGAR REPUESTOS EN MODAL
-function cargarRepuestosOT() {
-  const contenedor = document.getElementById("listaRepuestos");
+// 🔹 ABRIR EVALUACIÓN
+function abrirEvaluacion(id) {
 
-  if (!contenedor) {
-    console.log("No existe listaRepuestos");
-    return;
+  localStorage.setItem("otEvaluacion", id);
+
+  let ordenes = JSON.parse(localStorage.getItem("ordenes")) || [];
+  let ot = ordenes.find(o => o.id == id);
+
+  document.getElementById("modalEvaluacion").style.display = "flex";
+
+  const tieneChecklist = ot.evaluacion?.checklist?.length > 0;
+  const tieneProgreso = ot.evaluacion?.progreso?.length > 0;
+
+  if (tieneChecklist || tieneProgreso) {
+
+    renderEvaluacion(
+      ot.evaluacion.checklist || [],
+      ot.evaluacion.progreso || []
+    );
+
+    document.getElementById("evalPaso1").style.display = "none";
+    document.getElementById("evalPaso2").style.display = "block";
+
+  } else {
+
+    document.getElementById("evalPaso1").style.display = "block";
+    document.getElementById("evalPaso2").style.display = "none";
   }
-
-  contenedor.innerHTML = "";
-
-  if (!ot.repuestos || ot.repuestos.length === 0) {
-    contenedor.innerHTML = "<p>No hay repuestos cargados</p>";
-    return;
-  }
-
-  ot.repuestos.forEach((rep) => {
-
-    const nombre = rep.Nombre || rep.nombre || Object.values(rep)[0];
-
-    const item = document.createElement("div");
-    item.className = "item-repuesto";
-
-    item.innerHTML = `
-      <input type="checkbox" value="${nombre}">
-      <span>${nombre}</span>
-    `;
-
-    contenedor.appendChild(item);
-  });
 }
 
-// 🔹 navegación
+// 🔹 NAVEGACIÓN
 function irDashboard() {
   window.location.href = "dashboard.html";
 }
@@ -283,9 +390,70 @@ function irOT() {
   window.location.href = "ordenes.html";
 }
 
-function logout() {
-  window.location.href = "index.html";
+function cerrarModalPorId(id) {
+  const modal = document.getElementById(id);
+  if (modal) modal.style.display = "none";
 }
 
-// 🔥 iniciar
+window.addEventListener("click", function(e) {
+
+  document.querySelectorAll(".modal").forEach(modal => {
+    if (e.target === modal) {
+      modal.style.display = "none";
+    }
+  });
+
+});
+
+async function confirmarAprobacion() {
+
+  const input = document.getElementById("docsAprobacion");
+  const archivos = input.files;
+
+  if (!archivos || archivos.length === 0) {
+    alert("Debes adjuntar al menos un documento");
+    return;
+  }
+
+  const confirmar = confirm("¿Aprobar evaluación?");
+  if (!confirmar) return;
+
+  let docsBase64 = [];
+
+  for (let file of archivos) {
+    const base64 = await convertirBase64(file);
+    docsBase64.push(base64);
+  }
+
+  // 🔥 guardar en OT
+  ot.aprobada = true;
+  ot.bloqueada = false;
+  ot.estado = "Overhaul";
+
+  ot.aprobacion = {
+    documentos: docsBase64,
+    fecha: new Date().toLocaleDateString(),
+    usuario: "Administrador"
+  };
+
+  // 🔥 bitácora
+  ot.registros.push({
+    id: Date.now(),
+    fecha: new Date().toLocaleDateString(),
+    tecnico: "Administrador",
+    descripcion: "✅ Evaluación aprobada con documentación",
+    tipo: "aprobacion",
+    documentos: docsBase64
+  });
+
+  localStorage.setItem("ordenes", JSON.stringify(ordenes));
+
+  alert("OT aprobada correctamente");
+
+  cerrarModalPorId("modalAprobacion");
+
+  location.reload();
+}
+
+// 🔥 INICIO
 renderBitacora();

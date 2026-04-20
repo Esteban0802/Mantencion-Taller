@@ -205,3 +205,76 @@ input, select {
 .tabla-checklist tr:hover {
   background: #2a3a4f;
 }
+
+.registro-evaluacion {
+  border-left: 5px solid rgb(3, 39, 85);
+  background: #0378f4;
+  transition: 0.2s;
+}
+
+.registro-evaluacion:hover {
+  transform: scale(1.01);
+  background: #1004ed;
+}
+
+.item-evaluacion {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.fila-check {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.check-nombre {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.check-nombre input {
+  width: 18px;
+  height: 18px;
+}
+
+.btn-foto {
+  background: #334155;
+  padding: 6px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.btn-foto:hover {
+  background: #475569;
+}
+
+.preview {
+  margin-top: 10px;
+  width: 100%;
+  border-radius: 8px;
+}
+
+.cerrar-modal {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 18px;
+  cursor: pointer;
+  color: #94a3b8;
+  transition: 0.2s;
+}
+
+.cerrar-modal:hover {
+  color: #ef4444;
+  transform: scale(1.2);
+}
+
+.modal-content {
+  position: relative;
+}

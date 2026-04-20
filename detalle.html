@@ -26,6 +26,9 @@
       <h1 id="otId">OT-001</h1>
       <button onclick="finalizarOT()">Finalizar OT</button>
       <button onclick="abrirModalEntrega()">Entregar</button>
+      <button onclick="avanzarEstado()">Avanzar etapa</button>
+      <button id="btnAprobar">Aprobar</button>
+      <input type="file" id="docAprobacion" accept=".pdf,.jpg,.png" style="display:none;">
     </div>
 
     <!-- INFO GENERAL -->
@@ -38,33 +41,104 @@
 
     <!-- BOTÓN REGISTRO -->
     <button id="btnRegistro">+ Registrar trabajo</button>
+    <button id="btnOverhaul">Overhaul</button>
 
     <!-- BITÁCORA -->
     <h2>Bitácora</h2>
     <div id="bitacora"></div>
 
-    <!-- MODAL REGISTRO -->
-    <div id="modal" class="modal">
-      <div class="modal-content">
-        <h3>Registro Diario</h3>
+    <!-- 🔥 MODAL EVALUACIÓN -->
+<div id="modalEvaluacion" class="modal">
 
-        <input type="text" id="tecnico" placeholder="Nombre técnico">
-        <textarea id="descripcion" placeholder="Trabajo realizado"></textarea>
-        <input type="file" id="foto" accept="image/*" multiple>
+  <div class="modal-content">
+    <span class="cerrar-modal" onclick="cerrarModalPorId('modalEvaluacion')">✖</span>
+    <!-- PASO 1 -->
+    <div id="evalPaso1">
+      <h3>Cargar checklist de evaluación</h3>
+      <input type="file" id="excelEvaluacion" accept=".xlsx">
 
-        <h4>Repuestos utilizados</h4>
-        <div id="listaRepuestos" class="lista-repuestos"></div>
-
-        <!-- 🔥 NUEVA SECCIÓN DE REPUESTOS -->
-        <h4>Repuestos utilizados</h4>
-        <div id="listaRepuestos" class="lista-repuestos"></div>
-
-        <div class="botones">
-          <button onclick="guardarRegistro()">Guardar</button>
-          <button onclick="cerrarModal()">Cancelar</button>
-        </div>
-      </div>
+      <button onclick="cerrarEvaluacion()">Cancelar</button>
+      <button onclick="siguienteEvaluacion(1)">Siguiente</button>
     </div>
+
+    <!-- PASO 2 -->
+    <div id="evalPaso2" style="display:none;">
+      <h3>Checklist de evaluación</h3>
+
+      <div id="listaEvaluacion"></div>
+
+      <button onclick="event.stopPropagation(); guardarAvanceEvaluacion()">
+        💾 Guardar avance
+      </button>
+
+      <button onclick="event.stopPropagation(); finalizarEvaluacion()">
+        Finalizar Evaluación
+      </button>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- 🔥 MODAL OVERHAUL -->
+<div id="modalOverhaul" class="modal">
+  <div class="modal-content modal-grande">
+
+    <span class="cerrar-modal" onclick="cerrarModalPorId('modalOverhaul')">✖</span>
+
+    <!-- PASO 1: CARGAR CHECKLIST -->
+    <div id="overPaso1">
+      <h3>Cargar Checklist Overhaul</h3>
+      <input type="file" id="excelOverhaul" accept=".xlsx">
+
+      <button onclick="cerrarModalPorId('modalOverhaul')">Cancelar</button>
+      <button onclick="siguienteOverhaul(1)">Siguiente</button>
+    </div>
+
+    <!-- PASO 2: REGISTRO -->
+    <div id="overPaso2" style="display:none;">
+      <h3>Registro de trabajo</h3>
+
+      <input type="text" id="tecnicoOverhaul" placeholder="Nombre técnico">
+      <textarea id="comentarioOverhaul" placeholder="Trabajo realizado"></textarea>
+
+      <input type="file" id="fotosOverhaul" multiple accept="image/*">
+
+      <button onclick="volverOverhaul(2)">⬅ Volver</button>
+      <button onclick="siguienteOverhaul(2)">Siguiente ➡</button>
+    </div>
+
+    <!-- PASO 3: CHECKLIST -->
+    <div id="overPaso3" style="display:none;">
+      <h3>Checklist Overhaul</h3>
+
+      <div id="listaOverhaul"></div>
+
+      <button onclick="volverOverhaul(3)">⬅ Volver</button>
+      <button onclick="guardarOverhaul()">💾 Guardar</button>
+    </div>
+
+  </div>
+</div>
+
+<div id="modalAprobacion" class="modal">
+  <div class="modal-content">
+
+    <span class="cerrar-modal" onclick="cerrarModalPorId('modalAprobacion')">✖</span>
+
+    <h3>📄 Aprobación de Evaluación</h3>
+
+    <p>Adjunta documentación (mínimo 1 archivo)</p>
+
+    <input type="file" id="docsAprobacion" multiple accept=".pdf,.jpg,.png">
+
+    <div style="margin-top:20px;">
+      <button onclick="cerrarModalPorId('modalAprobacion')">Cancelar</button>
+      <button onclick="confirmarAprobacion()">Aprobar</button>
+    </div>
+
+  </div>
+</div>
 
   </main>
 
@@ -75,7 +149,11 @@
   <img id="imgGrande">
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="js/evaluacion.js"></script>
 <script src="js/detalle.js"></script>
+<script src="js/overhaul.js"></script>
+
 
 </body>
 </html>

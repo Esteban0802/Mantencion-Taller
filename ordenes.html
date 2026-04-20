@@ -46,25 +46,40 @@
     <!-- MODAL (FORMULARIO) -->
 <div id="modal" class="modal">
   <div class="modal-content">
+    <span class="cerrar-modal" onclick="cerrarModalPorId('modal')">✖</span>
 
     <!-- PASO 1 -->
     <div id="paso1">
       <h3>Datos del equipo</h3>
 
+      <label>Tipo de equipo</label>
+        <select id="tipoEquipo" onchange="cargarSubtipo()">
+          <option value="">Seleccionar</option>
+          <option value="Compresor">Compresor</option>
+          <option value="Secador">Secador</option>
+        </select>
+
+      <label>Subtipo</label>
+        <select id="subtipoEquipo">
+          <option value="">Seleccionar</option>
+        </select>
+
       <input type="text" id="maquina" placeholder="Máquina">
       <input type="text" id="serie" placeholder="Serie">
       <input type="text" id="cliente" placeholder="Cliente">
       <input type="text" id="numeroOS" placeholder="Número de OS (Ej: OS-001)">
+      <label>Checklist (Excel)</label>
+          <input type="file" id="excelChecklist" accept=".xlsx">
 
       <!-- Excel -->
-      <input type="file" id="excelChecklist" accept=".xlsx">
 
-      <button onclick="volverPaso(2)">⬅ Volver</button>
+
+      <button onclick="cerrarModalPorId('modal')">Cancelar</button>
       <button onclick="siguientePaso(1)">Siguiente</button>
     </div>
 
     <!-- PASO 2 -->
-    <div id="paso2" style="display:none;">
+     <div id="paso2" style="display:none;">
       <h3>Checklist de ingreso</h3>
 
       <div id="listaChecklist" class="lista-repuestos"></div>
@@ -88,13 +103,41 @@
   </div>
 </div>
 
+<div id="modalEvaluacion" class="modal">
+  <div class="modal-content modal-grande">
+    <span class="cerrar-modal" onclick="cerrarModalPorId('modalEvaluacion')">✖</span>
+
+    <!-- PASO 1 -->
+    <div id="evalPaso1">
+      <h3>Cargar Checklist Evaluación</h3>
+      <input type="file" id="excelEvaluacion" accept=".xlsx">
+
+      <button onclick="cerrarEvaluacion()">Cancelar</button>
+      <button onclick="siguienteEvaluacion(1)">Siguiente</button>
+    </div>
+
+    <!-- PASO 2 -->
+    <div id="evalPaso2" style="display:none;">
+      <h3>Checklist Evaluación</h3>
+
+      <div id="listaEvaluacion"></div>
+
+      <button onclick="guardarAvanceEvaluacion()">💾 Guardar avance</button>
+      <button onclick="finalizarEvaluacion()">Finalizar Evaluación</button>
+    </div>
+
+  </div>
+</div>
+
   </main>
 
 </div>
 
+
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+<script src="js/evaluacion.js"></script>
 <script src="js/ordenes.js"></script>
+<script src="js/overhaul.js"></script>
 
 </body>
 </html>

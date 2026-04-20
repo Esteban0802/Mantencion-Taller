@@ -1,3 +1,34 @@
+const checklistPorEquipo = {
+
+  "GA/GR/GX": [
+    { Nombre: "Revisión aceite" },
+    { Nombre: "Estado filtro aire" },
+    { Nombre: "Chequeo presión" }
+  ],
+
+  "ZT/ZR": [
+    { Nombre: "Chequeo etapas compresión" },
+    { Nombre: "Revisión válvulas" }
+  ],
+
+  "CD": [
+    { Nombre: "Revisión válvula purga" },
+    { Nombre: "Estado desecante" }
+  ],
+
+  "BD": [
+    { Nombre: "Revisión torre A" },
+    { Nombre: "Revisión torre B" }
+  ],
+
+  "FD": [
+    { Nombre: "Revisión ventilador" },
+    { Nombre: "Chequeo condensador" }
+  ]
+
+};
+
+
 const filtro = localStorage.getItem("filtroEstado");
 
 let checklistData = [];
@@ -22,6 +53,8 @@ async function guardarOT() {
   const cliente = document.getElementById("cliente").value;
   const numeroOS = document.getElementById("numeroOS").value;
   const fotosInput = document.getElementById("fotosIngreso");
+  const tipoEquipo = document.getElementById("tipoEquipo").value;
+  const subtipoEquipo = document.getElementById("subtipoEquipo").value;
 
   if (fotosInput.files.length === 0) {
     alert("Debes subir fotos de ingreso");
@@ -40,10 +73,18 @@ async function guardarOT() {
   maquina,
   serie,
   cliente,
+  tipoEquipo,
+  subtipoEquipo,
   estado: "Evaluación",
   fecha: new Date().toISOString().split("T")[0],
   checklistIngreso: checklistData,
   fotosIngreso: fotos,
+  evaluacion: {
+  checklist: [],
+  progreso: [] // 🔥 aquí se guardan avances
+},
+bloqueada: false,
+aprobada: false,
 
   // 🔥 NUEVO: registro automático
   registros: [
@@ -71,11 +112,12 @@ document.getElementById("maquina").value = "";
 document.getElementById("serie").value = "";
 document.getElementById("cliente").value = "";
 document.getElementById("fotosIngreso").value = "";
-document.getElementById("excelChecklist").value = "";
 document.getElementById("listaChecklist").innerHTML = "";
 document.getElementById("numeroOS").value = "";
 
 checklistData = [];
+
+
 
 // 🔄 VOLVER A PASO 1
 document.getElementById("paso1").style.display = "block";
@@ -86,6 +128,7 @@ document.getElementById("paso3").style.display = "none";
 
   cerrarModal();
   renderTabla();
+  abrirEvaluacion(nuevaOT.id);
 }
 
 // Renderizar tabla
@@ -137,6 +180,8 @@ fila.addEventListener("click", () => {
 
     tabla.appendChild(fila);
   });
+
+  
 }
 
 const buscador = document.getElementById("buscador");
@@ -158,48 +203,58 @@ function logout() {
   window.location.href = "index.html";
 }
 
-function siguientePaso(paso) {
+async function siguientePaso(paso) {
 
   if (paso === 1) {
+
   const maquina = document.getElementById("maquina").value;
   const serie = document.getElementById("serie").value;
   const cliente = document.getElementById("cliente").value;
-  const numeroOS = document.getElementById("numeroOS").value; // 🔥 AQUÍ
+  const numeroOS = document.getElementById("numeroOS").value;
+  const subtipo = document.getElementById("subtipoEquipo").value;
   const excel = document.getElementById("excelChecklist").files[0];
 
-    if (!maquina || !serie || !cliente || !numeroOS ||  !excel) {
-      alert("Completa todos los campos y carga el checklist");
-      return;
-    }
+  console.log("Excel:", excel);
 
-    const ordenesActuales = JSON.parse(localStorage.getItem("ordenes")) || [];
-
-    const existe = ordenesActuales.some(ot => ot.id === numeroOS);
-
-    if (existe) {
-      alert("Ya existe una OS con ese número");
-      return;
-    }
-
-    cargarChecklistExcel(excel);
-
-    document.getElementById("paso1").style.display = "none";
-    document.getElementById("paso2").style.display = "block";
+  if (!maquina || !serie || !cliente || !numeroOS || !subtipo || !excel) {
+    alert("Completa todos los campos y carga el checklist");
+    return;
   }
+
+  const existe = ordenes.some(ot => ot.id === numeroOS);
+
+  if (existe) {
+    alert("Ya existe una OS con ese número");
+    return;
+  }
+
+  // 🔥 CARGAR EXCEL
+  await cargarChecklistExcel(excel);
+
+  document.getElementById("paso1").style.display = "none";
+  document.getElementById("paso2").style.display = "block";
+}
 
   if (paso === 2) {
 
-    const checks = document.querySelectorAll("#listaChecklist input");
-    const todosMarcados = [...checks].every(c => c.checked);
+  const checks = document.querySelectorAll("#listaChecklist input");
 
-    if (!todosMarcados) {
-      alert("Debes completar todo el checklist");
-      return;
-    }
-
-    document.getElementById("paso2").style.display = "none";
-    document.getElementById("paso3").style.display = "block";
+  if (checks.length === 0) {
+    alert("No hay checklist cargado");
+    return;
   }
+
+  const noMarcados = [...checks].filter(c => !c.checked);
+
+  if (noMarcados.length > 0) {
+    alert(`Te faltan ${noMarcados.length} ítems por completar`);
+    return;
+  }
+
+  // ✅ TODO OK → AVANZA
+  document.getElementById("paso2").style.display = "none";
+  document.getElementById("paso3").style.display = "block";
+}
 }
 
 function volverPaso(paso) {
@@ -213,19 +268,6 @@ function volverPaso(paso) {
     document.getElementById("paso3").style.display = "none";
     document.getElementById("paso2").style.display = "block";
   }
-}
-
-async function cargarChecklistExcel(file) {
-
-  const data = await file.arrayBuffer();
-  const workbook = XLSX.read(data);
-
-  const hoja = workbook.Sheets[workbook.SheetNames[0]];
-  const json = XLSX.utils.sheet_to_json(hoja);
-
-  checklistData = json;
-
-  renderChecklist();
 }
 
 function renderChecklist() {
@@ -268,6 +310,7 @@ function renderChecklist() {
 
   table.appendChild(tbody);
   contenedor.appendChild(table);
+
 }
 
 function convertirBase64(file) {
@@ -278,4 +321,52 @@ function convertirBase64(file) {
     reader.onload = () => resolve(reader.result);
     reader.onerror = error => reject(error);
   });
+}
+
+function cargarSubtipo() {
+
+  const tipo = document.getElementById("tipoEquipo").value;
+  const subtipoSelect = document.getElementById("subtipoEquipo");
+
+  subtipoSelect.innerHTML = '<option value="">Seleccionar</option>';
+
+  let opciones = [];
+
+  if (tipo === "Compresor") {
+    opciones = ["GA/GR/GX", "ZT/ZR"];
+  }
+
+  if (tipo === "Secador") {
+    opciones = ["CD", "BD", "FD"];
+  }
+
+  opciones.forEach(op => {
+    const option = document.createElement("option");
+    option.value = op;
+    option.textContent = op;
+    subtipoSelect.appendChild(option);
+  });
+}
+
+async function cargarChecklistExcel(file) {
+
+  const data = await file.arrayBuffer();
+  const workbook = XLSX.read(data);
+
+  const hoja = workbook.Sheets[workbook.SheetNames[0]];
+  const json = XLSX.utils.sheet_to_json(hoja);
+
+  checklistData = json;
+
+  renderChecklist();
+}
+
+
+function cerrarEvaluacion() {
+  document.getElementById("modalEvaluacion").style.display = "none";
+}
+
+function cerrarModalPorId(id) {
+  const modal = document.getElementById(id);
+  if (modal) modal.style.display = "none";
 }
