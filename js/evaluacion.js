@@ -127,7 +127,8 @@ async function guardarAvanceEvaluacion() {
     let img = null;
 
     if (fileInput.files[0]) {
-      img = await convertirBase64(fileInput.files[0]);
+    const base64 = await convertirBase64(fileInput.files[0]);
+    img = await reducirImagen(base64);
     } else if (ot.evaluacion.progreso[i]) {
       img = ot.evaluacion.progreso[i].img;
     }
@@ -219,6 +220,26 @@ function convertirBase64(file) {
 
     reader.onload = () => resolve(reader.result);
     reader.onerror = error => reject(error);
+  });
+}
+
+function reducirImagen(base64, maxWidth = 800) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.src = base64;
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const scale = maxWidth / img.width;
+
+      canvas.width = maxWidth;
+      canvas.height = img.height * scale;
+
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      resolve(canvas.toDataURL("image/jpeg", 0.7));
+    };
   });
 }
 

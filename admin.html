@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel Administrador</title>
+  <link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <h2>Admin</h2>
+    <ul>
+      <li onclick="irDashboard()">Dashboard</li>
+      <li onclick="irOT()">Órdenes</li>
+      <li onclick="irAdmin()">Admin</li> <!-- 👈 AQUÍ -->
+      <li class="active">Aprobaciones</li>
+    </ul>
+  </aside>
+
+  <!-- CONTENIDO -->
+  <main class="main">
+
+    <h1>OTs Pendientes de Aprobación</h1>
+
+    <div id="listaPendientes"></div>
+
+  </main>
+
+</div>
+
+<script src="js/admin.js"></script>
+</body>
+</html>

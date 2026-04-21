@@ -109,6 +109,22 @@ if (btnOverhaul) {
   });
 }
 
+// 🔥 BOTÓN PRUEBAS (AQUÍ VA)
+const btnPruebas = document.getElementById("btnPruebas");
+
+if (btnPruebas) {
+
+  if (ot.estado === "Pruebas") {
+    btnPruebas.style.display = "inline-block";
+  } else {
+    btnPruebas.style.display = "none";
+  }
+
+  btnPruebas.addEventListener("click", () => {
+    abrirPruebas(ot.id);
+  });
+}
+
 // 🔒 BLOQUEAR SI ESTÁ EN ESPERA DE APROBACIÓN
 if (ot.bloqueada) {
   document.getElementById("btnRegistro").style.display = "none";
@@ -143,6 +159,26 @@ function convertirBase64(file) {
     reader.readAsDataURL(file);
     reader.onload = () => resolve(reader.result);
     reader.onerror = error => reject(error);
+  });
+}
+
+function reducirImagen(base64, maxWidth = 800) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.src = base64;
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const scale = maxWidth / img.width;
+
+      canvas.width = maxWidth;
+      canvas.height = img.height * scale;
+
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      resolve(canvas.toDataURL("image/jpeg", 0.7));
+    };
   });
 }
 
@@ -421,9 +457,17 @@ async function confirmarAprobacion() {
   let docsBase64 = [];
 
   for (let file of archivos) {
-    const base64 = await convertirBase64(file);
+  const base64 = await convertirBase64(file);
+
+  // 🔥 SOLO COMPRIMIR SI ES IMAGEN
+  if (file.type.startsWith("image/")) {
+    const comprimida = await reducirImagen(base64);
+    docsBase64.push(comprimida);
+  } else {
+    // ⚠️ PDFs y otros → sin comprimir (igual pesan mucho)
     docsBase64.push(base64);
   }
+}
 
   // 🔥 guardar en OT
   ot.aprobada = true;
@@ -454,6 +498,38 @@ async function confirmarAprobacion() {
 
   location.reload();
 }
+
+function irAdmin() {
+  window.location.href = "admin.html";
+}
+
+const btnRegistro = document.getElementById("btnRegistro");
+
+if (btnRegistro) {
+
+  // 🔓 Mostrar solo cuando se puede trabajar
+  if (!ot.bloqueada && (ot.estado === "Overhaul" || ot.estado === "Pruebas")) {
+    btnRegistro.style.display = "inline-block";
+  } else {
+    btnRegistro.style.display = "none";
+  }
+
+  // 🔥 CLICK → abrir flujo correcto
+  btnRegistro.addEventListener("click", () => {
+
+    if (ot.estado === "Overhaul") {
+      abrirOverhaul(ot.id);
+    }
+
+    if (ot.estado === "Pruebas") {
+      abrirPruebas(ot.id);
+    }
+
+  });
+
+}
+
+
 
 // 🔥 INICIO
 renderBitacora();

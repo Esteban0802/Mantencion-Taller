@@ -278,3 +278,50 @@ input, select {
 .modal-content {
   position: relative;
 }
+
+/* 🔵 PRUEBAS */
+.registro-pruebas {
+  border-left: 5px solid #2196F3;
+  background: #e3f2fd;
+}
+
+.pruebas-finalizada {
+  border-left: 5px solid #0d47a1;
+}
+
+/* ITEMS (igual evaluación) */
+.item-prueba {
+  background: #fff;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+}
+
+.fila-check {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.check-nombre {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-foto {
+  background: #2196F3;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.preview {
+  width: 80px;
+  margin-top: 8px;
+  border-radius: 6px;
+  cursor: pointer;
+}

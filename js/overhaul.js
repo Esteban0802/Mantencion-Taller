@@ -1,25 +1,43 @@
 // 🔥 ABRIR OVERHAUL
 function abrirOverhaul(id) {
 
-    if (!ot.aprobada) {
-  alert("Debes aprobar la evaluación antes de iniciar Overhaul");
-  return;
-}
-
   localStorage.setItem("otOverhaul", id);
 
   let ordenes = JSON.parse(localStorage.getItem("ordenes")) || [];
   let ot = ordenes.find(o => o.id == id);
 
+  if (!ot) {
+    alert("OT no encontrada");
+    return;
+  }
+
+  // 🔥 asegurar estructura
+  if (!ot.overhaul) {
+    ot.overhaul = {
+      checklist: [],
+      progreso: []
+    };
+  }
+
   document.getElementById("modalOverhaul").style.display = "flex";
 
-  const tieneChecklist = ot.overhaul?.checklist?.length > 0;
+  const tieneChecklist = ot.overhaul.checklist?.length > 0;
+  const tieneProgreso = ot.overhaul.progreso?.length > 0;
 
-  if (tieneChecklist) {
-    renderOverhaul(ot.overhaul.checklist, ot.overhaul.progreso);
+  // 🔥 CONTINUAR SI YA EXISTE
+  if (tieneChecklist || tieneProgreso) {
+
+    renderOverhaul(
+      ot.overhaul.checklist,
+      ot.overhaul.progreso
+    );
+
     document.getElementById("overPaso1").style.display = "none";
-    document.getElementById("overPaso2").style.display = "block";
+    document.getElementById("overPaso2").style.display = "none";
+    document.getElementById("overPaso3").style.display = "block";
+
   } else {
+    // 🔥 PRIMER INGRESO
     document.getElementById("overPaso1").style.display = "block";
     document.getElementById("overPaso2").style.display = "none";
     document.getElementById("overPaso3").style.display = "none";

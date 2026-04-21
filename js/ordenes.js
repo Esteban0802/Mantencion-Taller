@@ -64,9 +64,10 @@ async function guardarOT() {
   let fotos = [];
 
   for (let file of fotosInput.files) {
-    const base64 = await convertirBase64(file);
-    fotos.push(base64);
-  }
+  const base64 = await convertirBase64(file);
+  const comprimida = await reducirImagen(base64);
+  fotos.push(comprimida);
+}
 
   const nuevaOT = {
   id: numeroOS,
@@ -323,6 +324,26 @@ function convertirBase64(file) {
   });
 }
 
+function reducirImagen(base64, maxWidth = 800) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.src = base64;
+
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      const scale = maxWidth / img.width;
+
+      canvas.width = maxWidth;
+      canvas.height = img.height * scale;
+
+      const ctx = canvas.getContext("2d");
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+      resolve(canvas.toDataURL("image/jpeg", 0.7));
+    };
+  });
+}
+
 function cargarSubtipo() {
 
   const tipo = document.getElementById("tipoEquipo").value;
@@ -369,4 +390,19 @@ function cerrarEvaluacion() {
 function cerrarModalPorId(id) {
   const modal = document.getElementById(id);
   if (modal) modal.style.display = "none";
+}
+
+function irAdmin() {
+  window.location.href = "admin.html";
+}
+
+// 🔐 OCULTAR BOTÓN ADMIN SI NO ES ADMIN
+const rol = localStorage.getItem("rol");
+
+if (rol !== "admin") {
+  document.querySelectorAll("li").forEach(li => {
+    if (li.textContent.trim() === "Admin") {
+      li.style.display = "none";
+    }
+  });
 }

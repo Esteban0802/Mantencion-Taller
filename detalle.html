@@ -15,6 +15,7 @@
     <ul>
       <li onclick="irOT()">Órdenes</li>
       <li onclick="irDashboard()">Dashboard</li>
+      <li onclick="irAdmin()">Admin</li> <!-- 👈 AQUÍ -->
     </ul>
   </aside>
 
@@ -28,6 +29,7 @@
       <button onclick="abrirModalEntrega()">Entregar</button>
       <button onclick="avanzarEstado()">Avanzar etapa</button>
       <button id="btnAprobar">Aprobar</button>
+      <button id="btnPruebas">Iniciar Pruebas</button>
       <input type="file" id="docAprobacion" accept=".pdf,.jpg,.png" style="display:none;">
     </div>
 
@@ -140,6 +142,47 @@
   </div>
 </div>
 
+<!-- 🔵 MODAL PRUEBAS -->
+<div id="modalPruebas" class="modal">
+  <div class="modal-content modal-grande">
+
+    <span class="cerrar-modal" onclick="cerrarModalPorId('modalPruebas')">✖</span>
+
+    <!-- PASO 1 -->
+    <div id="pruebaPaso1">
+      <h3>Cargar Checklists</h3>
+
+      <label>Checklist Mecánico</label>
+      <input type="file" id="excelMecanico" accept=".xlsx">
+
+      <label>Checklist Eléctrico</label>
+      <input type="file" id="excelElectrico" accept=".xlsx">
+
+      <div class="botones-modal">
+        <button onclick="cerrarModalPorId('modalPruebas')">Cancelar</button>
+        <button onclick="siguientePruebas()">Siguiente</button>
+      </div>
+    </div>
+
+    <!-- PASO 2 -->
+    <div id="pruebaPaso2" style="display:none;">
+
+      <h3>Checklist Mecánico</h3>
+      <div id="listaMecanico"></div>
+
+      <h3>Checklist Eléctrico</h3>
+      <div id="listaElectrico"></div>
+
+      <div class="botones-modal">
+        <button onclick="guardarAvancePruebas()">💾 Guardar avance</button>
+        <button onclick="finalizarPruebas()">Finalizar Pruebas</button>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
   </main>
 
 </div>
@@ -153,6 +196,7 @@
 <script src="js/evaluacion.js"></script>
 <script src="js/detalle.js"></script>
 <script src="js/overhaul.js"></script>
+<script src="js/pruebas.js"></script>
 
 
 </body>
